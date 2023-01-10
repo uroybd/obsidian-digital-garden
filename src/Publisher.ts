@@ -267,13 +267,27 @@ export default class Publisher {
         publishedFrontMatter = this.addPermalink(fileFrontMatter, publishedFrontMatter, filePath);
 		publishedFrontMatter = this.addDefaultPassThrough(fileFrontMatter, publishedFrontMatter);
         publishedFrontMatter = this.addPageTags(fileFrontMatter, publishedFrontMatter);
+        publishedFrontMatter = this.addTimestamps(fileFrontMatter, publishedFrontMatter);
         publishedFrontMatter = this.addFrontMatterSettings(fileFrontMatter, publishedFrontMatter);
 
         const fullFrontMatter = publishedFrontMatter?.dgPassFrontmatter ? { ...fileFrontMatter, ...publishedFrontMatter } : publishedFrontMatter;
         const frontMatterString = JSON.stringify(fullFrontMatter);
 
         return `---\n${frontMatterString}\n---\n`;
-    }
+	}
+	
+	addTimestamps(baseFrontMatter: any, newFrontMatter: any) {
+		const publishedFrontMatter = { ...newFrontMatter };
+		const created_key = this.settings.defaultNoteSettings.dgCreatedTimestampName;
+		if (baseFrontMatter[created_key]) {
+			publishedFrontMatter["created"] = baseFrontMatter[created_key];
+		}
+		const updated_key = this.settings.defaultNoteSettings.dgUpdatedTimestampName;
+		if (baseFrontMatter[updated_key]) {
+			publishedFrontMatter["updated"] = baseFrontMatter[updated_key];
+		}
+		return publishedFrontMatter;
+	}
 
 	addDefaultPassThrough(baseFrontMatter: any, newFrontMatter: any) {
 		// Eventually we will add other pass-throughs here. e.g. tags.
@@ -316,8 +330,10 @@ export default class Publisher {
             if (baseFrontMatter["dg-home"]) {
                 tags.push("gardenEntry")
             }
-            if(tags.length > 0){
-                publishedFrontMatter["tags"] = tags;
+            
+            if (tags.length > 0) {
+                const uniqueTags = [...new Set(tags)]
+                publishedFrontMatter["tags"] = uniqueTags;
             }
         }
         return publishedFrontMatter;

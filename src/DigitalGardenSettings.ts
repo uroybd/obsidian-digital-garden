@@ -27,5 +27,8 @@ export default interface DigitalGardenSettings {
 		dgShowToc: boolean;
 		dgLinkPreview: boolean;
 		dgShowTags: boolean;
+		dgShowTimestamps: boolean;
+		dgCreatedTimestampName: string;
+		dgUpdatedTimestampName: string;
 	}
 }

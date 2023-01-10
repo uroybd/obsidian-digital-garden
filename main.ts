@@ -32,7 +32,10 @@ const DEFAULT_SETTINGS: DigitalGardenSettings = {
 		dgEnableSearch: false,
 		dgShowToc: false,
 		dgLinkPreview: false,
-		dgShowTags: false
+		dgShowTags: false,
+		dgShowTimestamps: false,
+		dgCreatedTimestampName: "created",
+		dgUpdatedTimestampName: "updated"
 	}
 }
 

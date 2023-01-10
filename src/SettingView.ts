@@ -154,7 +154,38 @@ export default class SettingView {
                     this.settings.defaultNoteSettings.dgShowTags = val;
                     this.saveSiteSettingsAndUpdateEnv(this.app.metadataCache, this.settings, this.saveSettings);
                 })
-            })
+			})
+		
+		new Setting(noteSettingsModal.contentEl)
+            .setName("Show Timestamps (dg-show-timestamps)")
+            .setDesc("When turned on, updated and created timestamps will be shown from your frontmatter.")
+            .addToggle(t => {
+                t.setValue(this.settings.defaultNoteSettings.dgShowTimestamps)
+                t.onChange((val) => {
+                    this.settings.defaultNoteSettings.dgShowTimestamps = val;
+                    this.saveSiteSettingsAndUpdateEnv(this.app.metadataCache, this.settings, this.saveSettings);
+                })
+			})
+		
+		new Setting(noteSettingsModal.contentEl)
+            .setName('Created Timestamp field name on frontmatter (dg-created-timestamp-name)')
+            .addText(text => text
+                .setPlaceholder('created')
+                .setValue(this.settings.defaultNoteSettings.dgCreatedTimestampName)
+                .onChange(async (value) => {
+                    this.settings.defaultNoteSettings.dgCreatedTimestampName = value;
+                    await this.saveSettings()
+				}));
+		
+		new Setting(noteSettingsModal.contentEl)
+            .setName('Updated Timestamp field name on frontmatter (dg-updated-timestamp-name)')
+            .addText(text => text
+                .setPlaceholder('updated')
+                .setValue(this.settings.defaultNoteSettings.dgUpdatedTimestampName)
+                .onChange(async (value) => {
+                    this.settings.defaultNoteSettings.dgUpdatedTimestampName = value;
+                    await this.saveSettings()
+                }));
 
          new Setting(noteSettingsModal.contentEl)
             .setName("Let all frontmatter through (dg-pass-frontmatter)")
@@ -480,7 +511,7 @@ export default class SettingView {
             prUrlElement.textContent = prUrl;
             li.appendChild(prUrlElement);
         });
-    };
+    }
 
     renderLoading() {
         this.loading.show();
