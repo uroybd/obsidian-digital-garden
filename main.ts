@@ -22,6 +22,7 @@ const DEFAULT_SETTINGS: DigitalGardenSettings = {
 	noteSettingsIsInitialized: false,
 	siteName: 'Digital Garden',
 	slugifyEnabled: true,
+	pathRewriteRules: '',
 	defaultNoteSettings: {
 		dgHomeLink: true,
 		dgPassFrontmatter: false,
@@ -119,7 +120,7 @@ export default class DigitalGarden extends Plugin {
 					const { vault, metadataCache } = this.app;
 					const publisher = new Publisher(vault, metadataCache, this.settings);
 					const siteManager = new DigitalGardenSiteManager(metadataCache, this.settings);
-					const publishStatusManager = new PublishStatusManager(siteManager, publisher);
+					const publishStatusManager = new PublishStatusManager(siteManager, publisher, this.app.metadataCache, this.settings);
 
 					const publishStatus = await publishStatusManager.getPublishStatus();
 					const filesToPublish = publishStatus.changedNotes.concat(publishStatus.unpublishedNotes)
@@ -209,7 +210,7 @@ export default class DigitalGarden extends Plugin {
 		if (!this.publishModal) {
 			const siteManager = new DigitalGardenSiteManager(this.app.metadataCache, this.settings);
 			const publisher = new Publisher(this.app.vault, this.app.metadataCache, this.settings);
-			const publishStatusManager = new PublishStatusManager(siteManager, publisher);
+			const publishStatusManager = new PublishStatusManager(siteManager, publisher, this.app.metadataCache, this.settings);
 			this.publishModal = new PublishModal(this.app, publishStatusManager, publisher, this.settings);
 		}
 		this.publishModal.open();

@@ -1,8 +1,9 @@
 import DigitalGardenSettings from "src/DigitalGardenSettings";
 import { MetadataCache, TFile } from "obsidian";
-import { extractBaseUrl, generateUrlPath } from "./utils";
+import { extractBaseUrl, generateUrlPath, resolvePathFromFrontmatter } from "./utils";
 import { Octokit } from "@octokit/core";
 import { Base64 } from 'js-base64';
+import { RequestListener } from "http";
 
 export interface IDigitalGardenSiteManager {
     getNoteUrl(file: TFile): string;
@@ -76,10 +77,7 @@ export default class DigitalGardenSiteManager implements IDigitalGardenSiteManag
             : `https://${this.settings.githubRepo}.netlify.app`;
 
 
-        const noteUrlPath = generateUrlPath(file.path, this.settings.slugifyEnabled);
-
-        let urlPath = `/${noteUrlPath}`;
-
+		let urlPath;
         const frontMatter = this.metadataCache.getCache(file.path).frontmatter;
 
         if (frontMatter && frontMatter["dg-home"] === true) {
@@ -88,7 +86,11 @@ export default class DigitalGardenSiteManager implements IDigitalGardenSiteManag
             urlPath = `/${frontMatter.permalink}`;
         } else if (frontMatter && frontMatter["dg-permalink"]) {
             urlPath = `/${frontMatter["dg-permalink"]}`;
-        }
+		} else {
+			const path = resolvePathFromFrontmatter(frontMatter, file.path, this.settings);
+			const noteUrlPath = generateUrlPath(path, this.settings.slugifyEnabled);
+			urlPath = `/${noteUrlPath}`;
+		}
 
         return `${baseUrl}${urlPath}`;
 

@@ -16,7 +16,7 @@ function extractBaseUrl(url: string) {
 	return url && url.replace("https://", "").replace("http://", "").replace(/\/$/, '')
 }
 
-function generateUrlPath(filePath: string, slugifyPath: boolean = true): string {
+function generateUrlPath(filePath: string, slugifyPath = true): string {
 	if(!filePath){
 		return filePath;
 	}
@@ -43,6 +43,23 @@ function kebabize(str: string){
 	   ? `${idx !== 0 ? '-' : ''}${letter.toLowerCase()}`
 	   : letter;
 	}).join('');
- }
+}
+ 
+function resolvePathFromFrontmatter(frontmatter: any, filePath: string, settings: any) {
+	if (frontmatter && frontmatter["dg-path"]) {
+		const file_name_parts = filePath.split("/");
+		filePath = frontmatter["dg-path"] + frontmatter["dg-path"][frontmatter["dg-path"].length - 1] == "/" ? '' : "/" + file_name_parts[file_name_parts.length - 1];
+		} else {
+			const rules = settings.pathRewriteRules.split('\n');
+			for (let i = 0; i < rules.length; i++) {
+				const parts = rules[i].split(":");
+				if (filePath.startsWith(parts[0])) {
+					filePath = filePath.replace(parts[0], parts[1]);
+					break;
+				}
+			}
+		}
+		return filePath;
+	}
 
-export { arrayBufferToBase64, extractBaseUrl, generateUrlPath, generateBlobHash, kebabize};
+export { arrayBufferToBase64, extractBaseUrl, generateUrlPath, generateBlobHash, kebabize, resolvePathFromFrontmatter};

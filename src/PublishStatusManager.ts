@@ -1,14 +1,19 @@
 import { IDigitalGardenSiteManager } from "./DigitalGardenSiteManager";
-import { TFile } from "obsidian";
+import { MetadataCache, TFile } from "obsidian";
 import { IPublisher } from "./Publisher";
-import { generateBlobHash } from "./utils";
+import { generateBlobHash, resolvePathFromFrontmatter } from "./utils";
+import DigitalGardenSettings from "./DigitalGardenSettings";
 
 export default class PublishStatusManager implements IPublishStatusManager{
     siteManager: IDigitalGardenSiteManager;
-    publisher: IPublisher;
-    constructor(siteManager: IDigitalGardenSiteManager, publisher:IPublisher ){
+	publisher: IPublisher;
+	metaDataCache: MetadataCache
+	settings: DigitalGardenSettings;
+    constructor(siteManager: IDigitalGardenSiteManager, publisher:IPublisher, metaDataCache: MetadataCache, settings: DigitalGardenSettings){
        this.siteManager = siteManager;
-       this.publisher = publisher;
+		this.publisher = publisher;
+		this.metaDataCache = metaDataCache;
+		this.settings = settings;
     }
 
     async getDeletedNotePaths(): Promise<Array<string>> {
@@ -21,7 +26,11 @@ export default class PublishStatusManager implements IPublishStatusManager{
     private generateDeletedNotePaths(remoteNoteHashes: {[key:string]: string}, marked: TFile[]): Array<string> {
         const deletedNotePaths: Array<string> = [];
         Object.keys(remoteNoteHashes).forEach(key => {
-            if (!marked.find(f => f.path === key)) {
+			if (!marked.find(f => {
+				const fileFrontMatter = { ...this.metaDataCache.getCache(f.path).frontmatter };
+				const path = resolvePathFromFrontmatter(fileFrontMatter, f.path, this.settings);
+				return path === key
+			})) {
                 if(!key.endsWith(".js")){
                     deletedNotePaths.push(key);
                 }
@@ -42,8 +51,10 @@ export default class PublishStatusManager implements IPublishStatusManager{
         for (const file of marked) {
             const content = await this.publisher.generateMarkdown(file);
 
-            const localHash = generateBlobHash(content);
-            const remoteHash = remoteNoteHashes[file.path];
+			const localHash = generateBlobHash(content);
+			const fileFrontMatter = { ...this.metaDataCache.getCache(file.path).frontmatter };
+			const path = resolvePathFromFrontmatter(fileFrontMatter, file.path, this.settings);
+            const remoteHash = remoteNoteHashes[path];
             if (!remoteHash) {
                 unpublishedNotes.push(file);
             }

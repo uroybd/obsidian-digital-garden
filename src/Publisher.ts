@@ -2,7 +2,7 @@ import { MetadataCache, TFile, Vault, Notice, getLinkpath } from "obsidian";
 import DigitalGardenSettings from "src/DigitalGardenSettings";
 import { Base64 } from "js-base64";
 import { Octokit } from "@octokit/core";
-import { arrayBufferToBase64, generateUrlPath, kebabize } from "./utils";
+import { arrayBufferToBase64, generateUrlPath, kebabize, resolvePathFromFrontmatter } from "./utils";
 import { vallidatePublishFrontmatter } from "./Validator";
 import { excaliDrawBundle, excalidraw } from "./constants";
 import { getAPI } from "obsidian-dataview";
@@ -104,8 +104,10 @@ export default class Publisher {
             return false;
         }
         try {
-            const text = await this.generateMarkdown(file);
-            await this.uploadText(file.path, text);
+			const text = await this.generateMarkdown(file);
+			const fileFrontMatter = { ...this.metadataCache.getCache(file.path).frontmatter };
+			const path = resolvePathFromFrontmatter(fileFrontMatter, file.path, this.settings);
+            await this.uploadText(path, text);
             return true;
         } catch {
             return false;
@@ -315,7 +317,9 @@ export default class Publisher {
             if (!publishedFrontMatter["permalink"].startsWith("/")) {
                 publishedFrontMatter["permalink"] = "/" + publishedFrontMatter["permalink"];
             }
-        } else {
+		} else {
+			filePath = resolvePathFromFrontmatter(baseFrontMatter, filePath, this.settings);
+			console.log(filePath);
             const noteUrlPath = generateUrlPath(filePath, this.settings.slugifyEnabled);
             publishedFrontMatter["permalink"] = "/" + noteUrlPath;
         }

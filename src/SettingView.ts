@@ -38,7 +38,8 @@ export default class SettingView {
         this.initializeDefaultNoteSettings();
         this.initializeThemesSettings();
         this.initializeSlugifySetting();
-        this.initializeRibbonIconSetting();
+		this.initializeRibbonIconSetting();
+		this.initializePathRewriteSetting();
         prModal.titleEl.createEl("h1", "Site template settings");
     }
 
@@ -427,6 +428,19 @@ export default class SettingView {
                 .setValue(this.settings.gardenBaseUrl)
                 .onChange(async (value) => {
                     this.settings.gardenBaseUrl = value;
+                    this.debouncedSaveAndUpdate(this.app.metadataCache, this.settings, this.saveSettings);
+                }));
+	}
+	
+	private initializePathRewriteSetting() {
+        new Setting(this.settingsRootElement)
+            .setName('Path rewrites')
+            .setDesc("Add one rule per line with following format: [from]:[to]")
+            .addTextArea(text => text
+                .setPlaceholder('[from]:[to]')
+                .setValue(this.settings.pathRewriteRules)
+                .onChange(async (value) => {
+                    this.settings.pathRewriteRules = value;
                     this.debouncedSaveAndUpdate(this.app.metadataCache, this.settings, this.saveSettings);
                 }));
     }
